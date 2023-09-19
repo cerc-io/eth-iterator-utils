@@ -8,8 +8,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/rawdb"
 	"github.com/ethereum/go-ethereum/core/state"
 
-	iter "github.com/cerc-io/go-eth-state-node-iterator"
-	fixt "github.com/cerc-io/go-eth-state-node-iterator/fixture"
+	iter "github.com/cerc-io/eth-iterator-utils"
+	fixture "github.com/cerc-io/eth-testing/chaindata/medium"
 )
 
 func TestMakePaths(t *testing.T) {
@@ -24,11 +24,14 @@ func TestMakePaths(t *testing.T) {
 }
 
 func TestIterator(t *testing.T) {
-	kvdb, ldberr := rawdb.NewLevelDBDatabase(fixt.ChainDataPath, 1024, 256, "eth-pg-ipfs-state-snapshot", false)
+	kvdb, ldberr := rawdb.NewLevelDBDatabase(fixture.ChainDataPath, 1024, 256, "vdb-geth", true)
 	if ldberr != nil {
 		t.Fatal(ldberr)
 	}
-	edb, err := rawdb.NewDatabaseWithFreezer(kvdb, fixt.AncientDataPath, "eth-pg-ipfs-state-snapshot", false)
+	edb, err := rawdb.NewDatabaseWithFreezer(kvdb, fixture.AncientDataPath, "vdb-geth", true)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +63,7 @@ func TestIterator(t *testing.T) {
 		}
 
 		runCase := func(t *testing.T, tc testCase) {
-			it := iter.NewPrefixBoundIterator(tree.NodeIterator(iter.HexToKeyBytes(tc.lower)), tc.lower, tc.upper)
+			it := iter.NewPrefixBoundIterator(tree.NodeIterator(iter.HexToKeyBytes(tc.lower)), tc.upper)
 			for it.Next(true) {
 				if bytes.Compare(it.Path(), tc.lower) < 0 {
 					t.Fatalf("iterator outside lower bound: %v", it.Path())
@@ -76,20 +79,21 @@ func TestIterator(t *testing.T) {
 	})
 
 	t.Run("trie is covered", func(t *testing.T) {
-		allPaths := fixt.Block1_Paths
+		allPaths := fixture.Block1_Paths
 		cases := []uint{1, 2, 4, 8, 16, 32}
 		runCase := func(t *testing.T, nbins uint) {
-			iters := iter.SubtrieIterators(tree, nbins)
+			iters := iter.SubtrieIterators(tree.NodeIterator, nbins)
 			ix := 0
 			for b := uint(0); b < nbins; b++ {
 				for it := iters[b]; it.Next(true); ix++ {
 					if !bytes.Equal(allPaths[ix], it.Path()) {
-						t.Fatalf("wrong path value\nexpected:\t%v\nactual:\t\t%v",
-							allPaths[ix], it.Path())
+						t.Fatalf("wrong path value in bin %d (index %d)\nexpected:\t%v\nactual:\t\t%v",
+							b, ix, allPaths[ix], it.Path())
 					}
 				}
-				// if the last node path was even-length, it will be duplicated
-				if len(allPaths[ix-1])&0b1 == 0 {
+				// if the last node path for the previous bin was even-length, the next iterator
+				// will seek to the same node and it will be duplicated (see comment in Next()).
+				if len(allPaths[ix-1])&1 == 0 {
 					ix--
 				}
 			}
