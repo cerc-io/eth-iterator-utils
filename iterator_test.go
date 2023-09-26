@@ -5,11 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/core/rawdb"
-	"github.com/ethereum/go-ethereum/core/state"
-
 	iter "github.com/cerc-io/eth-iterator-utils"
-	fixture "github.com/cerc-io/eth-testing/chaindata/medium"
+	"github.com/cerc-io/eth-iterator-utils/internal"
 )
 
 func TestMakePaths(t *testing.T) {
@@ -24,30 +21,8 @@ func TestMakePaths(t *testing.T) {
 }
 
 func TestIterator(t *testing.T) {
-	kvdb, ldberr := rawdb.NewLevelDBDatabase(fixture.ChainDataPath, 1024, 256, "vdb-geth", true)
-	if ldberr != nil {
-		t.Fatal(ldberr)
-	}
-	edb, err := rawdb.NewDatabaseWithFreezer(kvdb, fixture.AncientDataPath, "vdb-geth", true)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer edb.Close()
-
-	height := uint64(1)
-	hash := rawdb.ReadCanonicalHash(edb, height)
-	header := rawdb.ReadHeader(edb, hash, height)
-	if header == nil {
-		t.Fatalf("unable to read canonical header at height %d", height)
-	}
-	sdb := state.NewDatabase(edb)
-	tree, err := sdb.OpenTrie(header.Root)
-	if err != nil {
-		t.Fatal(err)
-	}
+	tree, edb := internal.OpenFixtureTrie(t, 1)
+	t.Cleanup(func() { edb.Close() })
 
 	t.Run("in bounds", func(t *testing.T) {
 		type testCase struct {
@@ -79,7 +54,7 @@ func TestIterator(t *testing.T) {
 	})
 
 	t.Run("trie is covered", func(t *testing.T) {
-		allPaths := fixture.Block1_Paths
+		allPaths := internal.FixtureNodePaths
 		cases := []uint{1, 2, 4, 8, 16, 32}
 		runCase := func(t *testing.T, nbins uint) {
 			iters := iter.SubtrieIterators(tree.NodeIterator, nbins)

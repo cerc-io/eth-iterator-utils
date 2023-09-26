@@ -23,15 +23,20 @@ import (
 	"github.com/ethereum/go-ethereum/trie"
 )
 
-// PrefixBoundIterator is a NodeIterator constrained by a lower & upper bound (as hex path prefixes)
-type PrefixBoundIterator struct {
-	trie.NodeIterator
-	EndPath []byte
-}
-
 // IteratorConstructor is a constructor returning a NodeIterator, which is used to decouple this
 // code from the trie implementation.
 type IteratorConstructor = func(startKey []byte) trie.NodeIterator
+
+// PrefixBoundIterator is a NodeIterator constrained by a lower & upper bound (as hex path prefixes)
+type PrefixBoundIterator struct {
+	trie.NodeIterator
+	StartPath, EndPath []byte
+}
+
+// NewPrefixBoundIterator returns an iterator with an upper bound value (hex path prefix)
+func NewPrefixBoundIterator(it trie.NodeIterator, to []byte) *PrefixBoundIterator {
+	return &PrefixBoundIterator{NodeIterator: it, StartPath: it.Path(), EndPath: to}
+}
 
 func (it *PrefixBoundIterator) Next(descend bool) bool {
 	if it.EndPath == nil {
@@ -49,9 +54,8 @@ func (it *PrefixBoundIterator) Next(descend bool) bool {
 	return bytes.Compare(it.Path(), it.EndPath) <= 0
 }
 
-// NewPrefixBoundIterator returns an iterator with an upper bound value (hex path prefix)
-func NewPrefixBoundIterator(it trie.NodeIterator, to []byte) *PrefixBoundIterator {
-	return &PrefixBoundIterator{NodeIterator: it, EndPath: to}
+func (it *PrefixBoundIterator) Bounds() ([]byte, []byte) {
+	return it.StartPath, it.EndPath
 }
 
 // generates nibble slice prefixes at uniform intervals

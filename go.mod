@@ -57,7 +57,7 @@ require (
 )
 
 replace (
-	github.com/cerc-io/eth-testing => git.vdb.to/cerc-io/eth-testing v0.2.1
+	github.com/cerc-io/eth-testing => git.vdb.to/cerc-io/eth-testing v0.3.1
 	// Not strictly necessary, but tells go what dependency versions should be
 	github.com/ethereum/go-ethereum => git.vdb.to/cerc-io/plugeth v0.0.0-20230808125822-691dc334fab1
 )
