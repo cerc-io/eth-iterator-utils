@@ -1,6 +1,6 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
-git.vdb.to/cerc-io/eth-testing v0.3.1-0.20230925181540-2ea71042e7e0 h1:fWAvsSiuDqveuxwnfc8psInfLZhMqHlQnmOpOHsd8Tk=
-git.vdb.to/cerc-io/eth-testing v0.3.1-0.20230925181540-2ea71042e7e0/go.mod h1:qdvpc/W1xvf2MKx3rMOqvFvYaYIHG77Z1g0lwsmw0Uk=
+git.vdb.to/cerc-io/eth-testing v0.3.1 h1:sPnlMev6oEgTjsW7GtUkSsjKNG/+X6P9q0izSejLGpM=
+git.vdb.to/cerc-io/eth-testing v0.3.1/go.mod h1:qdvpc/W1xvf2MKx3rMOqvFvYaYIHG77Z1g0lwsmw0Uk=
 git.vdb.to/cerc-io/plugeth v0.0.0-20230808125822-691dc334fab1 h1:KLjxHwp9Zp7xhECccmJS00RiL+VwTuUGLU7qeIctg8g=
 git.vdb.to/cerc-io/plugeth v0.0.0-20230808125822-691dc334fab1/go.mod h1:cYXZu70+6xmDgIgrTD81GPasv16piiAFJnKyAbwVPMU=
 github.com/AndreasBriese/bbloom v0.0.0-20190306092124-e2d15f34fcf9/go.mod h1:bOvUY6CB00SOBii9/FifXqc0awNKxLFCL/+pkDPuyl8=
