@@ -140,11 +140,11 @@ func eachPrefixRange(prefix []byte, nbins uint, callback func([]byte, []byte)) {
 }
 
 // SubtrieIterators cuts a trie by path prefix, returning `nbins` iterators covering its subtries
-func SubtrieIterators(makeIterator IteratorConstructor, nbins uint) []trie.NodeIterator {
-	var iters []trie.NodeIterator
+func SubtrieIterators(makeIterator IteratorConstructor, nbins uint) (iters, bases []trie.NodeIterator) {
 	eachPrefixRange(nil, nbins, func(from []byte, to []byte) {
 		it := makeIterator(HexToKeyBytes(from))
+		bases = append(bases, it)
 		iters = append(iters, NewPrefixBoundIterator(it, to))
 	})
-	return iters
+	return iters, bases
 }
