@@ -27,7 +27,11 @@ func TestTracker(t *testing.T) {
 
 		var prevPath []byte
 		count := 0
-		for it := tr.Tracked(tree.NodeIterator(nil)); it.Next(true); {
+		nodeit, err := tree.NodeIterator(nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for it := tr.Tracked(nodeit); it.Next(true); {
 			if count == interrupt {
 				return prevPath // tracker rewinds one node to prevent gaps
 			}

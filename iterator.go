@@ -25,7 +25,7 @@ import (
 
 // IteratorConstructor is a constructor returning a NodeIterator, which is used to decouple this
 // code from the trie implementation.
-type IteratorConstructor = func(startKey []byte) trie.NodeIterator
+type IteratorConstructor = func(startKey []byte) (trie.NodeIterator, error)
 
 // PrefixBoundIterator is a NodeIterator constrained by a lower & upper bound (as hex path prefixes)
 type PrefixBoundIterator struct {
@@ -126,7 +126,7 @@ func MakePaths(prefix []byte, nbins uint) [][]byte {
 	return res
 }
 
-func eachPrefixRange(prefix []byte, nbins uint, callback func([]byte, []byte)) {
+func eachPrefixRange(prefix []byte, nbins uint, callback func([]byte, []byte) error) error {
 	prefixes := MakePaths(prefix, nbins)
 	prefixes = append(prefixes, nil) // include tail
 	prefixes[0] = nil                // set bin 0 left bound to nil to include root
@@ -135,16 +135,24 @@ func eachPrefixRange(prefix []byte, nbins uint, callback func([]byte, []byte)) {
 		if len(key)%2 != 0 { // zero-pad for odd-length keys
 			key = append(key, 0)
 		}
-		callback(key, prefixes[i+1])
+		err := callback(key, prefixes[i+1])
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // SubtrieIterators cuts a trie by path prefix, returning `nbins` iterators covering its subtries
-func SubtrieIterators(makeIterator IteratorConstructor, nbins uint) []trie.NodeIterator {
+func SubtrieIterators(makeIterator IteratorConstructor, nbins uint) ([]trie.NodeIterator, error) {
 	var iters []trie.NodeIterator
-	eachPrefixRange(nil, nbins, func(from []byte, to []byte) {
-		it := makeIterator(HexToKeyBytes(from))
+	err := eachPrefixRange(nil, nbins, func(from []byte, to []byte) error {
+		it, err := makeIterator(HexToKeyBytes(from))
+		if err != nil {
+			return err
+		}
 		iters = append(iters, NewPrefixBoundIterator(it, to))
+		return nil
 	})
-	return iters
+	return iters, err
 }

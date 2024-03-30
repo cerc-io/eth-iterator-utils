@@ -38,7 +38,11 @@ func TestIterator(t *testing.T) {
 		}
 
 		runCase := func(t *testing.T, tc testCase) {
-			it := iter.NewPrefixBoundIterator(tree.NodeIterator(iter.HexToKeyBytes(tc.lower)), tc.upper)
+			nit, err := tree.NodeIterator(iter.HexToKeyBytes(tc.lower))
+			if err != nil {
+				t.Fatalf("failed to create iterator: %v", err)
+			}
+			it := iter.NewPrefixBoundIterator(nit, tc.upper)
 			for it.Next(true) {
 				if bytes.Compare(it.Path(), tc.lower) < 0 {
 					t.Fatalf("iterator outside lower bound: %v", it.Path())
@@ -57,7 +61,10 @@ func TestIterator(t *testing.T) {
 		allPaths := internal.FixtureNodePaths
 		cases := []uint{1, 2, 4, 8, 16, 32}
 		runCase := func(t *testing.T, nbins uint) {
-			iters := iter.SubtrieIterators(tree.NodeIterator, nbins)
+			iters, err := iter.SubtrieIterators(tree.NodeIterator, nbins)
+			if err != nil {
+				t.Fatalf("failed to create subtrie iterators: %v", err)
+			}
 			ix := 0
 			for b := uint(0); b < nbins; b++ {
 				for it := iters[b]; it.Next(true); ix++ {

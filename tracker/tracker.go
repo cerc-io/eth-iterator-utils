@@ -194,7 +194,10 @@ func (tr *TrackerImpl) Restore(makeIterator iter.IteratorConstructor) (
 			// to avoid skipped nodes, we must rewind by one index
 			recoveredPath = rewindPath(recoveredPath)
 		}
-		it := makeIterator(iter.HexToKeyBytes(recoveredPath))
+		it, err := makeIterator(iter.HexToKeyBytes(recoveredPath))
+		if err != nil {
+			return nil, nil, err
+		}
 		boundIt := iter.NewPrefixBoundIterator(it, endPath)
 		wrapped = append(wrapped, tr.Tracked(boundIt))
 		base = append(base, it)
