@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/cerc-io/eth-testing v0.4.0
-	github.com/ethereum/go-ethereum v1.13.14
+	github.com/ethereum/go-ethereum v1.13.15
 )
 
 require (
