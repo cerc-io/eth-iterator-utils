@@ -1,6 +1,6 @@
 module github.com/cerc-io/eth-iterator-utils
 
-go 1.19
+go 1.21
 
 require (
 	github.com/cerc-io/eth-testing v0.4.0
