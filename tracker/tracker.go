@@ -254,20 +254,21 @@ func (it *Iterator) Bounds() ([]byte, []byte) {
 	return nil, nil
 }
 
-// Rewinds to the path of the previous (pre-order) node:
+// Returns the path, rewound to the previous (pre-order) node:
+// If path is the root (empty) or a leaf path, it's returned.
 // If the last byte of the path is zero, pops it (e.g. [1 0] => [1]).
 // Otherwise, decrements it and pads with 0xF to 64 bytes (e.g. [1] => [0 f f f ...]).
 // The passed slice is not modified.
 func rewindPath(path []byte) []byte {
-	if len(path) == 0 {
+	if len(path) == 0 || path[len(path)-1] == 0x10 {
 		return path
 	}
 	if path[len(path)-1] == 0 {
 		return path[:len(path)-1]
 	}
-	path[len(path)-1]--
 	padded := make([]byte, 64)
 	i := copy(padded, path)
+	padded[len(path)-1]--
 	for ; i < len(padded); i++ {
 		padded[i] = 0xf
 	}
