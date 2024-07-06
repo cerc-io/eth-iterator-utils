@@ -189,7 +189,7 @@ func (tr *TrackerImpl) Restore(makeIterator iter.IteratorConstructor) (
 			}
 		}
 
-		// force the lower bound path to an even length (required by geth API/HexToKeyBytes)
+		// force the lower bound path to an even length (required by NodeIterator constructor)
 		if len(recoveredPath)&1 == 1 {
 			// to avoid skipped nodes, we must rewind by one index
 			recoveredPath = rewindPath(recoveredPath)
@@ -246,6 +246,7 @@ func (it *Iterator) Next(descend bool) bool {
 	return ret
 }
 
+// Bounds returns the bounds of the underlying PrefixBoundIterator, if any
 func (it *Iterator) Bounds() ([]byte, []byte) {
 	if impl, ok := it.NodeIterator.(*iter.PrefixBoundIterator); ok {
 		return impl.Bounds()

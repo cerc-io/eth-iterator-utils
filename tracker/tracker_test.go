@@ -25,7 +25,6 @@ func TestTracker(t *testing.T) {
 		tr := tracker.New(recoveryFile, NumIters)
 		defer tr.CloseAndSave()
 
-		var prevPath []byte
 		count := 0
 		nodeit, err := tree.NodeIterator(nil)
 		if err != nil {
@@ -33,9 +32,9 @@ func TestTracker(t *testing.T) {
 		}
 		for it := tr.Tracked(nodeit); it.Next(true); {
 			if count == interrupt {
-				return prevPath // tracker rewinds one node to prevent gaps
+				t.Logf("interrupting at: i=%d path=%v", count, it.Path())
+				return it.Path()
 			}
-			prevPath = it.Path()
 			count++
 		}
 		return nil
@@ -58,8 +57,18 @@ func TestTracker(t *testing.T) {
 	if uint(len(its)) != NumIters {
 		t.Fatalf("expected to restore %d iterators, got %d", NumIters, len(its))
 	}
+	if !its[0].Next(true) {
+		t.Fatal("iterator ends prematurely after restore")
+	}
 	if !bytes.Equal(failedAt, its[0].Path()) {
-		t.Fatalf("iterator restored to wrong position: expected %v, got %v", failedAt, its[0].Path())
+		// Due to the constraint that NodeIterator can only be initialized with an even-length path,
+		// we sometimes rewind an extra node when restoring (e.g. [1 2 0] => [1 2]).
+		if !its[0].Next(true) {
+			t.Fatal("iterator ends prematurely after restore")
+		}
+		if !bytes.Equal(failedAt, its[0].Path()) {
+			t.Fatalf("iterator restored to wrong position: expected %v, got %v", failedAt, its[0].Path())
+		}
 	}
 
 	if fileExists(recoveryFile) {
