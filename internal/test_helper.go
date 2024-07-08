@@ -3,24 +3,27 @@ package internal
 import (
 	"testing"
 
-	"github.com/cerc-io/eth-testing/chaindata/small2"
+	"github.com/cerc-io/eth-testing/chains/premerge2"
 	"github.com/ethereum/go-ethereum/core/rawdb"
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/ethdb"
 )
 
 var (
-	FixtureNodePaths = small2.Block1_StateNodePaths
-	FixtureLeafKeys  = small2.Block1_StateNodeLeafKeys
+	FixtureNodePaths = premerge2.Block1_StateNodePaths
+	FixtureLeafKeys  = premerge2.Block1_StateNodeLeafKeys
 )
 
 func OpenFixtureTrie(t *testing.T, height uint64) (state.Trie, ethdb.Database) {
-	data := small2.ChainData
-	kvdb, ldberr := rawdb.NewLevelDBDatabase(data.ChainData, 1024, 256, t.Name(), true)
-	if ldberr != nil {
-		t.Fatal(ldberr)
-	}
-	edb, err := rawdb.NewDatabaseWithFreezer(kvdb, data.Ancient, t.Name(), true)
+	data := premerge2.ChainData
+	edb, err := rawdb.Open(rawdb.OpenOptions{
+		Directory:         data.ChainData,
+		AncientsDirectory: data.Ancient,
+		Namespace:         t.Name(),
+		Cache:             1024,
+		Handles:           256,
+		ReadOnly:          true,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
